@@ -34,7 +34,7 @@ const downloadURL = program.path;
 
 const PORT = process.env.ENV_PORT || 3000;
 const DOWNLOAD_URL = process.env.ENV_FILE_URL || null;
-const TARGET_DIR = '../dist';
+const TARGET_DIR = 'dist';
 const FILENAME = 'dist.tar';
 const TMP_DIR = '../tmp';
 
@@ -62,7 +62,7 @@ const job = new CronJob('0 0 */1 * * *', function() {
 job.start();
 
 // Start server
-app.use(express.static(path.join(__dirname, TARGET_DIR)));
+app.use(express.static(TARGET_DIR));
 console.log('Server running on port', PORT);
 app.listen(PORT);
 
