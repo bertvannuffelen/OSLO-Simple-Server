@@ -64,7 +64,7 @@ job.start();
 
 // Start server
 app.use(express.static(TARGET_DIR));
-app.use(fallback('index.html', { TARGET_DIR }))
+app.use(fallback('index.html', { root: TARGET_DIR }))
 console.log('Server running on port', PORT);
 app.listen(PORT);
 
