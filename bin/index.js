@@ -1,3 +1,4 @@
+const fallback =require( 'express-history-api-fallback')
 const program = require('commander');
 const express = require('express');
 const path = require('path');
@@ -63,6 +64,7 @@ job.start();
 
 // Start server
 app.use(express.static(TARGET_DIR));
+app.use(fallback('index.html', { TARGET_DIR }))
 console.log('Server running on port', PORT);
 app.listen(PORT);
 
