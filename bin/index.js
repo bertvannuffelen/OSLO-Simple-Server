@@ -1,4 +1,4 @@
-const fallback =require( 'express-history-api-fallback')
+const fallback = require('express-history-api-fallback')
 const program = require('commander');
 const express = require('express');
 const path = require('path');
@@ -35,44 +35,47 @@ const downloadURL = program.path;
 
 const PORT = process.env.ENV_PORT || 3000;
 const DOWNLOAD_URL = process.env.ENV_FILE_URL || null;
+const FALLBACK_TO_INDEX = process.env.FALLBACK_TO_INDEX || "true";
 const TARGET_DIR = 'dist';
 const FILENAME = 'dist.tar';
 const TMP_DIR = '../tmp';
 
 const watcher = chokidar.watch(TARGET_DIR);
-watcher.on('ready', function() {
-    watcher.on('all', function() {
+watcher.on('ready', function () {
+    watcher.on('all', function () {
         console.log(`[Chokidar]: clearing cache from server, due to new content`);
-        Object.keys(require.cache).forEach(function(id) {
+        Object.keys(require.cache).forEach(function (id) {
             if (/[\/\\]app[\/\\]/.test(id)) delete require.cache[id]
         })
     })
 });
 
-if(!DOWNLOAD_URL){
-    console.error('Please provide a URL to the updated content, so the server can fetch new updates');
-    process.exit(1);
-}
-
-fetchContent(DOWNLOAD_URL, TMP_DIR);
+if (!DOWNLOAD_URL) {
+    console.warn('Please provide a URL to the updated content, so the server can fetch new updates');
+} else {
+    fetchContent(DOWNLOAD_URL, TMP_DIR);
 
 //This job will fetch the directory every hour
-const job = new CronJob('0 0 */1 * * *', function() {
-    fetchContent(DOWNLOAD_URL, TMP_DIR);
-});
-job.start();
+    const job = new CronJob('0 0 */1 * * *', function () {
+        fetchContent(DOWNLOAD_URL, TMP_DIR);
+    });
+    job.start();
+}
+
 
 // Start server
 app.use(express.static(TARGET_DIR));
-app.use(fallback('index.html', { root: TARGET_DIR }))
+if (FALLBACK_TO_INDEX === "true") {
+    console.log('server uses fallback to index.html');
+    app.use(fallback('index.html', {root: TARGET_DIR}))
+}
 console.log('Server running on port', PORT);
 app.listen(PORT);
 
 
-
 // function to fetch the folder where the updated content will be stored
-function fetchContent(url, tmpDir){
-    const { exec } = require('child_process');
+function fetchContent(url, tmpDir) {
+    const {exec} = require('child_process');
     exec('wget ' + url + ' -P ' + tmpDir, (err) => {
         if (err) {
             console.log(`[Server]: an error occured while downloading ${url}.`);
